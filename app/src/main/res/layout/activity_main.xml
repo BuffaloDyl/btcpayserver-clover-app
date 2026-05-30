@@ -7,122 +7,403 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:padding="32dp"
-        android:gravity="center_horizontal">
+        android:padding="24dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="BTCPay for Clover"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="#1A1A1A"
-            android:layout_marginTop="32dp"/>
-
-        <View
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#E0E0E0"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="24dp"/>
+            android:layout_height="wrap_content">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="BTCPay Server URL"
-            android:textSize="13sp"
-            android:textColor="#555555"
-            android:layout_marginBottom="4dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="BTCPay POS"
+                android:textColor="#1A1A1A"
+                android:textSize="28sp"
+                android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/edit_btcpay_url"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="https://your-btcpay-server.com"
-            android:inputType="textUri"
-            android:padding="12dp"
-            android:background="@drawable/input_border"
-            android:layout_marginBottom="16dp"/>
+            <ImageButton
+                android:id="@+id/btn_settings"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_gravity="end|center_vertical"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Settings"
+                android:padding="8dp"
+                android:src="@android:drawable/ic_menu_manage"
+                android:tint="#666666"
+                android:visibility="gone" />
+        </FrameLayout>
 
-        <TextView
+        <LinearLayout
+            android:id="@+id/layout_setup_info"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Store ID"
-            android:textSize="13sp"
-            android:textColor="#555555"
-            android:layout_marginBottom="4dp"/>
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="gone">
 
-        <EditText
-            android:id="@+id/edit_store_id"
+            <TextView
+                android:id="@+id/text_employee"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:textColor="#555555"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/text_config_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:textColor="#2E7D32"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/text_clover_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:textColor="#555555"
+                android:textSize="13sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:background="#E0E0E0" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_entry_state"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Your BTCPay Store ID"
-            android:inputType="text"
-            android:padding="12dp"
-            android:background="@drawable/input_border"
-            android:layout_marginBottom="16dp"/>
+            android:orientation="vertical">
 
-        <TextView
+            <TextView
+                android:id="@+id/text_config_warning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="#FFF4E5"
+                android:gravity="center"
+                android:padding="12dp"
+                android:text="BTCPay server is not configured. Ask a manager to set it up."
+                android:textColor="#9C4A00"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/text_entry_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Amount"
+                android:textColor="#666666"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/text_entry_context"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="Enter sale amount"
+                android:textColor="#888888"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/text_entry_total_preview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="Invoice total: $0.00"
+                android:textColor="#1A1A1A"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/text_amount_display"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:minHeight="72dp"
+                android:padding="12dp"
+                android:text="$0.00"
+                android:textColor="#1A1A1A"
+                android:textSize="42sp"
+                android:textStyle="bold" />
+
+            <GridLayout
+                android:id="@+id/layout_tip_presets"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:alignmentMode="alignMargins"
+                android:columnCount="2"
+                android:rowCount="2"
+                android:useDefaultMargins="true"
+                android:visibility="gone">
+
+                <Button
+                    android:id="@+id/btn_tip_18"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_columnWeight="1"
+                    android:text="18%"
+                    android:textSize="24sp" />
+
+                <Button
+                    android:id="@+id/btn_tip_20"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_columnWeight="1"
+                    android:text="20%"
+                    android:textSize="24sp" />
+
+                <Button
+                    android:id="@+id/btn_tip_25"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_columnWeight="1"
+                    android:text="25%"
+                    android:textSize="24sp" />
+
+                <Button
+                    android:id="@+id/btn_tip_custom"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_columnWeight="1"
+                    android:text="Custom"
+                    android:textSize="24sp" />
+            </GridLayout>
+
+            <GridLayout
+                android:id="@+id/layout_keypad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:alignmentMode="alignMargins"
+                android:columnCount="3"
+                android:rowCount="4"
+                android:useDefaultMargins="true">
+
+                <Button
+                    android:id="@+id/btn_digit_1"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_columnWeight="1"
+                    android:text="1"
+                    android:textSize="26sp" />
+
+                <Button
+                    android:id="@+id/btn_digit_2"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_columnWeight="1"
+                    android:text="2"
+                    android:textSize="26sp" />
+
+                <Button
+                    android:id="@+id/btn_digit_3"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_columnWeight="1"
+                    android:text="3"
+                    android:textSize="26sp" />
+
+                <Button
+                    android:id="@+id/btn_digit_4"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_columnWeight="1"
+                    android:text="4"
+                    android:textSize="26sp" />
+
+                <Button
+                    android:id="@+id/btn_digit_5"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_columnWeight="1"
+                    android:text="5"
+                    android:textSize="26sp" />
+
+                <Button
+                    android:id="@+id/btn_digit_6"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_columnWeight="1"
+                    android:text="6"
+                    android:textSize="26sp" />
+
+                <Button
+                    android:id="@+id/btn_digit_7"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_columnWeight="1"
+                    android:text="7"
+                    android:textSize="26sp" />
+
+                <Button
+                    android:id="@+id/btn_digit_8"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_columnWeight="1"
+                    android:text="8"
+                    android:textSize="26sp" />
+
+                <Button
+                    android:id="@+id/btn_digit_9"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_columnWeight="1"
+                    android:text="9"
+                    android:textSize="26sp" />
+
+                <Button
+                    android:id="@+id/btn_clear_amount"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_columnWeight="1"
+                    android:text="CLR"
+                    android:textSize="20sp" />
+
+                <Button
+                    android:id="@+id/btn_digit_0"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_columnWeight="1"
+                    android:text="0"
+                    android:textSize="26sp" />
+
+                <Button
+                    android:id="@+id/btn_backspace"
+                    android:layout_width="0dp"
+                    android:layout_height="72dp"
+                    android:layout_columnWeight="1"
+                    android:text="⌫"
+                    android:textSize="24sp" />
+            </GridLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_secondary_action"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:text="Back"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/btn_charge"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="2"
+                    android:backgroundTint="#51B13E"
+                    android:text="Charge"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_sale_state"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="API Key"
-            android:textSize="13sp"
-            android:textColor="#555555"
-            android:layout_marginBottom="4dp"/>
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="gone">
 
-        <EditText
-            android:id="@+id/edit_api_key"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Your BTCPay API Key"
-            android:inputType="textPassword"
-            android:padding="12dp"
-            android:background="@drawable/input_border"
-            android:layout_marginBottom="24dp"/>
+            <TextView
+                android:id="@+id/text_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:textColor="#1A1A1A"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/btn_test_save"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="Test Connection &amp; Save"
-            android:backgroundTint="#51B13E"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp"/>
+            <TextView
+                android:id="@+id/text_subtotal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:gravity="center"
+                android:textColor="#666666"
+                android:textSize="18sp" />
 
-        <TextView
-            android:id="@+id/text_connection_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textSize="14sp"
-            android:gravity="center"
-            android:layout_marginBottom="16dp"/>
+            <TextView
+                android:id="@+id/text_tip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:textColor="#666666"
+                android:textSize="18sp" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#E0E0E0"
-            android:layout_marginBottom="24dp"/>
+            <TextView
+                android:id="@+id/text_total"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:textColor="#1A1A1A"
+                android:textSize="26sp"
+                android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/text_tender_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textSize="14sp"
-            android:gravity="center"
-            android:layout_marginBottom="8dp"/>
+            <ImageView
+                android:id="@+id/image_qr"
+                android:layout_width="280dp"
+                android:layout_height="280dp"
+                android:layout_marginTop="20dp"
+                android:contentDescription="Payment QR code"
+                android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/text_tender_hint"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textSize="12sp"
-            android:textColor="#888888"
-            android:gravity="center"/>
+            <TextView
+                android:id="@+id/text_success_checkmark"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:gravity="center"
+                android:text="✓"
+                android:textColor="#2E7D32"
+                android:textSize="112sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btn_cancel_sale"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="18dp"
+                android:text="Cancel"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btn_new_sale"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="12dp"
+                android:text="New Sale"
+                android:visibility="gone" />
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="8dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="BTCPay Server URL"
+        android:textColor="#555555"
+        android:textSize="13sp" />
+
+    <EditText
+        android:id="@+id/edit_btcpay_url"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/input_border"
+        android:hint="https://your-btcpay-server.com"
+        android:inputType="textUri"
+        android:padding="12dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Store ID"
+        android:textColor="#555555"
+        android:textSize="13sp" />
+
+    <EditText
+        android:id="@+id/edit_store_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/input_border"
+        android:hint="BTCPay store ID"
+        android:inputType="text"
+        android:padding="12dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="API Key"
+        android:textColor="#555555"
+        android:textSize="13sp" />
+
+    <EditText
+        android:id="@+id/edit_api_key"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/input_border"
+        android:hint="BTCPay API key"
+        android:inputType="textPassword"
+        android:padding="12dp" />
+
+    <CheckBox
+        android:id="@+id/check_tipping_enabled"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:text="Enable tipping"
+        android:textColor="#1A1A1A"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/text_settings_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:textColor="#1A1A1A"
+        android:textSize="13sp" />
+
+</LinearLayout>
