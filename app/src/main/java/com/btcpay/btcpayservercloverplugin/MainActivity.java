@@ -38,6 +38,12 @@ public class MainActivity extends Activity {
     private static final int ENTRY_MODE_AMOUNT = 0;
     private static final int ENTRY_MODE_TIP_OPTIONS = 1;
     private static final int ENTRY_MODE_TIP_CUSTOM = 2;
+    public static final String EXTRA_POS_HANDOFF = "com.buffalodyl.btcpayservercloverplugin.EXTRA_POS_HANDOFF";
+    public static final String EXTRA_HANDOFF_AMOUNT = "com.buffalodyl.btcpayservercloverplugin.EXTRA_HANDOFF_AMOUNT";
+    public static final String EXTRA_HANDOFF_ORDER_ID = "com.buffalodyl.btcpayservercloverplugin.EXTRA_HANDOFF_ORDER_ID";
+    public static final String EXTRA_HANDOFF_MERCHANT_ID = "com.buffalodyl.btcpayservercloverplugin.EXTRA_HANDOFF_MERCHANT_ID";
+    public static final String EXTRA_HANDOFF_EMPLOYEE_ID = "com.buffalodyl.btcpayservercloverplugin.EXTRA_HANDOFF_EMPLOYEE_ID";
+    public static final String EXTRA_HANDOFF_CURRENCY = "com.buffalodyl.btcpayservercloverplugin.EXTRA_HANDOFF_CURRENCY";
 
     private LinearLayout layoutSetupInfo;
     private LinearLayout layoutEntryState;
@@ -65,7 +71,7 @@ public class MainActivity extends Activity {
     private Button btnNewSale;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private final Currency currency = resolveCurrency();
+    private Currency saleCurrency;
 
     private TenderConnector tenderConnector;
     private boolean tenderRegistrationRequested = false;
@@ -78,6 +84,8 @@ public class MainActivity extends Activity {
     private boolean canManageSettings = false;
 
     private String currentOrderId;
+    private String currentMerchantId;
+    private String handoffEmployeeId;
     private String currentInvoiceId;
     private long currentBaseAmountCents;
     private long currentTipAmountCents;
@@ -127,6 +135,7 @@ public class MainActivity extends Activity {
         layoutKeypad = findViewById(R.id.layout_keypad);
         btnCancelSale = findViewById(R.id.btn_cancel_sale);
         btnNewSale = findViewById(R.id.btn_new_sale);
+        saleCurrency = resolveCurrency();
 
         btnSettings.setOnClickListener(v -> showSettingsDialog());
         btnCharge.setOnClickListener(v -> beginChargeFlow());
@@ -138,6 +147,14 @@ public class MainActivity extends Activity {
         updateConfigSummary();
         resetSaleUi();
         refreshEmployeeContext();
+        handleLaunchIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(android.content.Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleLaunchIntent(intent);
     }
 
     @Override
@@ -317,7 +334,6 @@ public class MainActivity extends Activity {
         currentBaseAmountCents = baseAmountCents;
         currentTipAmountCents = Math.max(tipAmountCents, 0L);
         currentTotalAmountCents = currentBaseAmountCents + currentTipAmountCents;
-        currentOrderId = null;
         currentInvoiceId = null;
 
         updateBreakdown();
@@ -331,21 +347,26 @@ public class MainActivity extends Activity {
 
         new Thread(() -> {
             try {
-                CloverOrderManager orderManager = new CloverOrderManager(this);
-                currentOrderId = orderManager.createManualOrder(
-                        activeEmployeeId,
-                        currentBaseAmountCents,
-                        currentTipAmountCents,
-                        "Bitcoin Sale");
-                Log.i(TAG, "Created Clover order " + currentOrderId);
+                String effectiveEmployeeId = getEffectiveEmployeeId();
+                if (currentOrderId == null || currentOrderId.isEmpty()) {
+                    CloverOrderManager orderManager = new CloverOrderManager(this);
+                    currentOrderId = orderManager.createManualOrder(
+                            effectiveEmployeeId,
+                            currentBaseAmountCents,
+                            currentTipAmountCents,
+                            "Bitcoin Sale");
+                    Log.i(TAG, "Created Clover order " + currentOrderId);
+                } else {
+                    Log.i(TAG, "Using handed-off Clover order " + currentOrderId);
+                }
 
                 BTCPayApiClient client = new BTCPayApiClient(this);
                 BTCPayApiClient.InvoiceResult invoice = client.createInvoice(
                         currentTotalAmountCents,
-                        currency.getCurrencyCode(),
+                        saleCurrency.getCurrencyCode(),
                         currentOrderId,
-                        null,
-                        activeEmployeeId,
+                        currentMerchantId,
+                        effectiveEmployeeId,
                         currentBaseAmountCents,
                         currentTipAmountCents);
 
@@ -417,7 +438,7 @@ public class MainActivity extends Activity {
             try {
                 new CloverPaymentRecorder(this).recordPayment(
                         currentOrderId,
-                        activeEmployeeId,
+                        getEffectiveEmployeeId(),
                         currentInvoiceId,
                         currentBaseAmountCents,
                         currentTipAmountCents);
@@ -486,6 +507,8 @@ public class MainActivity extends Activity {
         saleInProgress = false;
         finalizingSale = false;
         currentOrderId = null;
+        currentMerchantId = null;
+        handoffEmployeeId = null;
         currentInvoiceId = null;
         currentBaseAmountCents = 0L;
         currentTipAmountCents = 0L;
@@ -493,6 +516,7 @@ public class MainActivity extends Activity {
         enteredAmountDigits = "";
         enteredTipDigits = "";
         entryMode = ENTRY_MODE_AMOUNT;
+        saleCurrency = resolveCurrency();
 
         updateEntryUi();
         btnCancelSale.setEnabled(true);
@@ -762,7 +786,7 @@ public class MainActivity extends Activity {
     }
 
     private String formatAmount(long amountCents) {
-        return String.format(Locale.US, "%s%.2f", currency.getSymbol(), amountCents / 100.0);
+        return String.format(Locale.US, "%s%.2f", saleCurrency.getSymbol(), amountCents / 100.0);
     }
 
     private String formatPaymentMethod(String paymentMethodId) {
@@ -791,5 +815,75 @@ public class MainActivity extends Activity {
         } catch (Exception e) {
             return Currency.getInstance("USD");
         }
+    }
+
+    private void handleLaunchIntent(android.content.Intent launchIntent) {
+        if (launchIntent == null || !launchIntent.getBooleanExtra(EXTRA_POS_HANDOFF, false)) {
+            return;
+        }
+
+        long handedOffAmount = launchIntent.getLongExtra(EXTRA_HANDOFF_AMOUNT, 0L);
+        if (handedOffAmount <= 0L) {
+            clearHandoffExtras(launchIntent);
+            return;
+        }
+
+        String handedOffCurrency = launchIntent.getStringExtra(EXTRA_HANDOFF_CURRENCY);
+        if (handedOffCurrency != null && !handedOffCurrency.isEmpty()) {
+            try {
+                saleCurrency = Currency.getInstance(handedOffCurrency);
+            } catch (Exception e) {
+                Log.w(TAG, "Unsupported handed-off currency " + handedOffCurrency, e);
+                saleCurrency = resolveCurrency();
+            }
+        }
+
+        currentOrderId = launchIntent.getStringExtra(EXTRA_HANDOFF_ORDER_ID);
+        currentMerchantId = launchIntent.getStringExtra(EXTRA_HANDOFF_MERCHANT_ID);
+        handoffEmployeeId = launchIntent.getStringExtra(EXTRA_HANDOFF_EMPLOYEE_ID);
+        currentBaseAmountCents = handedOffAmount;
+        currentTipAmountCents = 0L;
+        currentTotalAmountCents = handedOffAmount;
+        enteredAmountDigits = String.valueOf(handedOffAmount);
+        enteredTipDigits = "";
+
+        Log.i(TAG, "Received POS handoff amount=" + handedOffAmount
+                + " orderId=" + currentOrderId
+                + " merchantId=" + currentMerchantId
+                + " employeeId=" + handoffEmployeeId
+                + " currency=" + saleCurrency.getCurrencyCode());
+
+        showEntryState();
+        updateBreakdown();
+        if (!new BTCPayApiClient(this).isConfigured()) {
+            textStatus.setText("BTCPay settings are required before charging.");
+            entryMode = ENTRY_MODE_AMOUNT;
+            updateEntryUi();
+            clearHandoffExtras(launchIntent);
+            return;
+        }
+
+        if (BTCPayApiClient.loadConfiguration(this).tippingEnabled) {
+            entryMode = ENTRY_MODE_TIP_OPTIONS;
+            updateEntryUi();
+        } else {
+            entryMode = ENTRY_MODE_AMOUNT;
+            updateEntryUi();
+            startSale(handedOffAmount, 0L);
+        }
+        clearHandoffExtras(launchIntent);
+    }
+
+    private void clearHandoffExtras(android.content.Intent intent) {
+        intent.removeExtra(EXTRA_POS_HANDOFF);
+        intent.removeExtra(EXTRA_HANDOFF_AMOUNT);
+        intent.removeExtra(EXTRA_HANDOFF_ORDER_ID);
+        intent.removeExtra(EXTRA_HANDOFF_MERCHANT_ID);
+        intent.removeExtra(EXTRA_HANDOFF_EMPLOYEE_ID);
+        intent.removeExtra(EXTRA_HANDOFF_CURRENCY);
+    }
+
+    private String getEffectiveEmployeeId() {
+        return activeEmployeeId != null ? activeEmployeeId : handoffEmployeeId;
     }
 }

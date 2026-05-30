@@ -83,6 +83,9 @@ public class MerchantFacingTenderActivity extends Activity {
             Log.w(TAG, "onCreate missing currency; leaving tender in canceled state");
             return;
         }
+        if (launchStandalonePos()) {
+            return;
+        }
         tipAmountCents = 0L;
         totalAmountCents = baseAmountCents;
 
@@ -107,6 +110,25 @@ public class MerchantFacingTenderActivity extends Activity {
         });
 
         startTipFlow();
+    }
+
+    private boolean launchStandalonePos() {
+        if (baseAmountCents <= 0L) {
+            return false;
+        }
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra(MainActivity.EXTRA_POS_HANDOFF, true);
+        intent.putExtra(MainActivity.EXTRA_HANDOFF_AMOUNT, baseAmountCents);
+        intent.putExtra(MainActivity.EXTRA_HANDOFF_ORDER_ID, orderId);
+        intent.putExtra(MainActivity.EXTRA_HANDOFF_MERCHANT_ID, merchantId);
+        intent.putExtra(MainActivity.EXTRA_HANDOFF_EMPLOYEE_ID, employeeId);
+        intent.putExtra(MainActivity.EXTRA_HANDOFF_CURRENCY, currency.getCurrencyCode());
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        Log.i(TAG, "Launching standalone POS handoff amount=" + baseAmountCents + " orderId=" + orderId);
+        startActivity(intent);
+        setResult(RESULT_CANCELED);
+        finish();
+        return true;
     }
 
     private void startTipFlow() {
